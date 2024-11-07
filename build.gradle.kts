@@ -8,7 +8,12 @@ plugins {
     id("io.ktor.plugin") version "3.0.0"
 }
 
+group = "it.adami.services.blog"
+version = "0.0.1"
+
+
 application {
+    applicationName = "blog-api"
     mainClass.set("io.ktor.server.netty.EngineMain")
 }
 
@@ -26,4 +31,15 @@ dependencies {
     implementation("io.ktor:ktor-server-config-yaml:$ktor_version")
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+}
+
+// Specify Java 21 toolchain
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+kotlin {
+    jvmToolchain(21)
 }
