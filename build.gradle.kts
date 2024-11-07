@@ -8,7 +8,12 @@ plugins {
     id("io.ktor.plugin") version "3.0.0"
 }
 
+group = "it.adami.services.blog"
+version = "0.0.1"
+
+
 application {
+    applicationName = "blog-api"
     mainClass.set("io.ktor.server.netty.EngineMain")
 }
 
