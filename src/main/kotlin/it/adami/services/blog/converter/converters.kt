@@ -5,7 +5,7 @@ import it.adami.services.blog.model.UserStatus
 import it.adami.services.blog.routes.json.CreateUserRequest
 import java.time.Instant
 
-fun fromCreateUserRequestToUser(req: CreateUserRequest): User =
+fun toDomain(req: CreateUserRequest): User =
     User(
         id = -1,
         name = req.name,

@@ -7,7 +7,7 @@ import io.ktor.server.testing.*
 import kotlin.test.*
 import io.ktor.server.routing.*
 
-class HealthCheckRouteTest {
+class HealthCheckRoutesTest {
 
     @Test
     fun testHealthCheckRouteIsReturningNoContent() = testApplication {

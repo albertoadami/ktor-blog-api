@@ -7,7 +7,8 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.plugins.contentnegotiation.*
 import it.adami.services.blog.routes.*
 import io.ktor.serialization.kotlinx.json.*
-import it.adami.services.blog.service.InMemoryUserService
+import it.adami.services.blog.repository.InMemoryUserRepository
+import it.adami.services.blog.service.UserServiceRules
 
 
 fun Application.configureRouting() {
@@ -20,7 +21,13 @@ fun Application.configureRouting() {
         json()
     }
 
-    val userRoutes = UserRoutes(InMemoryUserService())
+    // repository classes
+    val userRepository = InMemoryUserRepository()
+
+    //service classes
+    val userService = UserServiceRules(userRepository)
+
+    val userRoutes = UserRoutes(userService)
 
     routing {
        healthCheckRoutes()

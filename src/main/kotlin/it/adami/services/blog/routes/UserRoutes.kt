@@ -15,7 +15,7 @@ class UserRoutes(private val userService: UserService) {
             post {
                 val userRequest = call.receive<CreateUserRequest>()
                 try {
-                    val createdIdOpt = userService.create(fromCreateUserRequestToUser(userRequest))
+                    val createdIdOpt = userService.create(toDomain(userRequest))
 
                     when (createdIdOpt) {
                         null -> call.respond(HttpStatusCode.Conflict)
