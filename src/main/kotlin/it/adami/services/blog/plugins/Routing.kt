@@ -7,8 +7,11 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.plugins.contentnegotiation.*
 import it.adami.services.blog.routes.*
 import io.ktor.serialization.kotlinx.json.*
+import it.adami.services.blog.config.AppConfig
+import it.adami.services.blog.config.DatabaseConfig
 import it.adami.services.blog.repository.InMemoryUserRepository
 import it.adami.services.blog.service.UserServiceRules
+import org.flywaydb.core.Flyway
 
 
 fun Application.configureRouting() {
