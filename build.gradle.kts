@@ -29,6 +29,8 @@ dependencies {
     implementation("io.ktor:ktor-server-host-common-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
+    implementation("org.flywaydb:flyway-core:7.10.0")
+    implementation("org.postgresql:postgresql:42.7.4")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-server-status-pages:$ktor_version")
