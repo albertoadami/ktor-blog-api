@@ -5,14 +5,11 @@ import it.adami.services.blog.config.DatabaseConfig
 import org.flywaydb.core.Flyway
 
 fun Application.migrateDatabase(dbConfig: DatabaseConfig) {
-    println("Database Config: host=${dbConfig.host}, port=${dbConfig.port}, name=${dbConfig.name}")
-    val jdbcUrl = "jdbc:postgresql://${dbConfig.host}:${dbConfig.port}/${dbConfig.name}"
-    print("ursl: $jdbcUrl")
     val flyway = Flyway.configure()
         .dataSource(
-            "jdbc:postgresql://localhost:5432/blog",  // Use localhost for Flyway connection
-            "postgres",  // Username
-            "password"   // Password
+            "jdbc:postgresql://${dbConfig.host}:${dbConfig.port}/${dbConfig.name}",  // Use localhost for Flyway connection
+            dbConfig.username,  // Username
+            dbConfig.password   // Password
         )
         .load()
     flyway.migrate()
