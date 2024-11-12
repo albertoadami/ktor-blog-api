@@ -1,69 +1,72 @@
 package it.adami.services.blog.service
 
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
-import it.adami.services.blog.exceptions.EmailAlreadyInUse
+import it.adami.services.blog.exceptions.EmailAlreadyInUseException
 import it.adami.services.blog.model.User
 import it.adami.services.blog.model.UserStatus
 import it.adami.services.blog.repository.UserRepository
 import kotlinx.coroutines.runBlocking
 import org.mockito.kotlin.*
 import java.time.Instant
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
-class UserServiceRulesTest {
+class UserServiceRulesTest: WordSpec({
 
-    private val userRepository: UserRepository = mock()
-    private val userService: UserService = UserServiceRules(userRepository)
+    val userRepository: UserRepository = mock()
+    val userService: UserService = UserServiceRules(userRepository)
 
-    @Test
-    fun `create should return user ID when user is created successfully`()  {
-        runBlocking {
-            // Arrange
-            val user = User(
-                name = "John",
-                surname = "Doe",
-                email = "john.doe@example.com",
-                password = "password",
-                status = UserStatus.PENDING,
-                createdAt = Instant.now(),
-                updatedAt = Instant.now()
-            )
-            val expectedId = 1L
-            whenever(userRepository.create(user)).thenReturn(expectedId)
+    "UserServiceRulesTest" should {
 
-            // Act
-            val result = userService.create(user)
+        "return the user ID when is created successfully" {
+            runBlocking {
+                // Arrange
+                val user = User(
+                    name = "John",
+                    surname = "Doe",
+                    email = "john.doe@example.com",
+                    password = "password",
+                    status = UserStatus.PENDING,
+                    createdAt = Instant.now(),
+                    updatedAt = Instant.now()
+                )
+                val expectedId = 1L
+                whenever(userRepository.create(user)).thenReturn(expectedId)
 
-            // Assert
-            assertEquals(expectedId, result)
-            verify(userRepository).create(user)
-        }
-    }
+                // Act
+                val result = userService.create(user)
 
-    @Test
-    fun `create should return null when user creation fails`()  {
-        runBlocking {
-            // Arrange
-            val user = User(
-                name = "John",
-                surname = "Doe",
-                email = "john.doe@example.com",
-                password = "password",
-                status = UserStatus.PENDING,
-                createdAt = Instant.now(),
-                updatedAt = Instant.now()
-            )
-            whenever(userRepository.create(user)).thenReturn(null)
-
-            // Act
-            val exception = assertFailsWith<EmailAlreadyInUse> {
-                userService.create(user)
+                // Assert
+                expectedId shouldBe result
+                verify(userRepository).create(user)
             }
-            // Assert
-            exception.email shouldBe user.email
-            verify(userRepository).create(user)
+
+        }
+
+        "throw EmailAlaradyInUse when the email is already in use" {
+            runBlocking {
+                // Arrange
+                val user = User(
+                    name = "John",
+                    surname = "Doe",
+                    email = "john.doe@example.com",
+                    password = "password",
+                    status = UserStatus.PENDING,
+                    createdAt = Instant.now(),
+                    updatedAt = Instant.now()
+                )
+                whenever(userRepository.create(user)).thenReturn(null)
+
+                // Act
+                val exception = shouldThrow<EmailAlreadyInUseException> {
+                    userService.create(user)
+                }
+                // Assert
+                exception.email shouldBe user.email
+                verify(userRepository).create(user)
+            }
+
         }
     }
-}
+
+})

@@ -6,14 +6,14 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.logging.*
 import it.adami.services.blog.converter.*
-import it.adami.services.blog.exceptions.EmailAlreadyInUse
+import it.adami.services.blog.exceptions.EmailAlreadyInUseException
 import it.adami.services.blog.routes.json.CreateUserRequest
 import it.adami.services.blog.service.UserService
 import org.jetbrains.exposed.sql.exposedLogger
 
 class UserRoutes(private val userService: UserService) {
 
-    fun Route.routes() {
+    private fun Route.routes() {
         route("users") {
             post {
                 val userRequest = call.receive<CreateUserRequest>()
@@ -22,7 +22,7 @@ class UserRoutes(private val userService: UserService) {
                     val locationUri = "/users/$createdId"
                     call.response.headers.append(HttpHeaders.Location, locationUri)
                     call.respond(HttpStatusCode.Created)
-                } catch (e: EmailAlreadyInUse) {
+                } catch (e: EmailAlreadyInUseException) {
                     call.respond(HttpStatusCode.Conflict)
                 } catch (e: Exception) {
                     exposedLogger.error(e)
