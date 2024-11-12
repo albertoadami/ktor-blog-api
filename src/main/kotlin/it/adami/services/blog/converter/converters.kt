@@ -3,6 +3,7 @@ package it.adami.services.blog.converter
 import it.adami.services.blog.model.User
 import it.adami.services.blog.model.UserStatus
 import it.adami.services.blog.routes.json.CreateUserRequest
+import it.adami.services.blog.routes.json.GetUserResponse
 import java.time.Instant
 
 fun toDomain(req: CreateUserRequest): User =
@@ -15,4 +16,15 @@ fun toDomain(req: CreateUserRequest): User =
         createdAt = Instant.now(),
         updatedAt = Instant.now(),
         status = UserStatus.PENDING
+    )
+
+fun toJson(user: User): GetUserResponse =
+    GetUserResponse(
+        id = user.id,
+        name = user.name,
+        surname = user.surname,
+        email = user.email,
+        status = user.status,
+        createdAt = user.createdAt,
+        updatedAt = user.updatedAt
     )
