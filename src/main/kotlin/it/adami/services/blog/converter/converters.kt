@@ -24,7 +24,7 @@ fun toJson(user: User): GetUserResponse =
         name = user.name,
         surname = user.surname,
         email = user.email,
-        status = user.status,
+        enabled = user.isActive,
         createdAt = user.createdAt,
         updatedAt = user.updatedAt
     )
