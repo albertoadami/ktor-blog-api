@@ -31,6 +31,20 @@ class UserRoutes(private val userService: UserService) {
 
 
             }
+            get("{userId}") {
+                val userId = (call.parameters["userId"]!!).toLong()
+                try {
+                    when(val result = userService.getById(userId)) {
+                        null -> call.respond(HttpStatusCode.NotFound)
+                        else -> call.respond(toJson(result))
+                    }
+
+                } catch (e: Exception) {
+                    exposedLogger.error(e)
+
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
         }
     }
 

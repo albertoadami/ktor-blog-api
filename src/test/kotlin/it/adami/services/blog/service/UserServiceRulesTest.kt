@@ -13,12 +13,15 @@ import java.time.Instant
 
 class UserServiceRulesTest: WordSpec({
 
-    val userRepository: UserRepository = mock()
-    val userService: UserService = UserServiceRules(userRepository)
+    class Fixtures {
+        val userRepository: UserRepository = mock()
+        val userService: UserService = UserServiceRules(userRepository)
+    }
 
-    "UserServiceRulesTest" should {
+    "UserServiceRules.create()" should {
 
         "return the user ID when is created successfully" {
+            val f = Fixtures()
             runBlocking {
                 // Arrange
                 val user = User(
@@ -31,19 +34,20 @@ class UserServiceRulesTest: WordSpec({
                     updatedAt = Instant.now()
                 )
                 val expectedId = 1L
-                whenever(userRepository.create(user)).thenReturn(expectedId)
+                whenever(f.userRepository.create(user)).thenReturn(expectedId)
 
                 // Act
-                val result = userService.create(user)
+                val result = f.userService.create(user)
 
                 // Assert
                 expectedId shouldBe result
-                verify(userRepository).create(user)
+                verify(f.userRepository).create(user)
             }
 
         }
 
-        "throw EmailAlaradyInUse when the email is already in use" {
+        "throw EmailAlreadyInUseException when the email is already in use" {
+            val f = Fixtures()
             runBlocking {
                 // Arrange
                 val user = User(
@@ -55,18 +59,59 @@ class UserServiceRulesTest: WordSpec({
                     createdAt = Instant.now(),
                     updatedAt = Instant.now()
                 )
-                whenever(userRepository.create(user)).thenReturn(null)
+                whenever(f.userRepository.create(user)).thenReturn(null)
 
                 // Act
                 val exception = shouldThrow<EmailAlreadyInUseException> {
-                    userService.create(user)
+                    f.userService.create(user)
                 }
                 // Assert
                 exception.email shouldBe user.email
-                verify(userRepository).create(user)
+                verify(f.userRepository).create(user)
             }
 
         }
     }
+
+    "UserServiceRules.getById(id)" should {
+        "return the user if the persistence layer is returning it" {
+            val f = Fixtures()
+            runBlocking {
+                // Arrange
+                val user = User(
+                    id = 1,
+                    name = "John",
+                    surname = "Doe",
+                    email = "john.doe@example.com",
+                    password = "password",
+                    status = UserStatus.PENDING,
+                    createdAt = Instant.now(),
+                    updatedAt = Instant.now()
+                )
+                val expectedId = 1L
+                whenever(f.userRepository.getById(user.id)).thenReturn(user)
+
+                // Act
+                val result = f.userService.getById(user.id)
+
+                // Assert
+                result shouldBe user
+                verify(f.userRepository).getById(user.id)
+            }
+        }
+
+        "return null if the persistence layer is not finding the user" {
+            val f = Fixtures()
+
+            whenever(f.userRepository.getById(1L)).thenReturn(null)
+
+            val result = f.userService.getById(1L)
+
+            result shouldBe null
+            verify(f.userRepository).getById(1L)
+        }
+    }
+
+
 
 })

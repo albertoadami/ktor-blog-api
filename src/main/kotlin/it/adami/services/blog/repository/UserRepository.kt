@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.JavaInstantColumnType
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,6 +16,8 @@ import java.time.Instant
 interface UserRepository {
 
     suspend fun create(user: User): Long?
+
+    suspend fun getById(id: Long): User?
 }
 
 class ExposedUserRepository: UserRepository {
@@ -53,6 +56,28 @@ class ExposedUserRepository: UserRepository {
                 throw e
             }
         }
+    }
+
+    override suspend fun getById(id: Long): User? = withContext(Dispatchers.IO) {
+        transaction {
+            Users
+                .select( Users.id eq id)
+                .mapNotNull{toUser(it)}
+                .singleOrNull()
+        }
+    }
+
+    private fun toUser(row: ResultRow): User {
+        return User(
+            id = row[Users.id],
+            name = row[Users.name],
+            surname = row[Users.surname],
+            email = row[Users.email],
+            password = row[Users.password],
+            status = row[Users.status],
+            createdAt = row[Users.createdAt],
+            updatedAt = row[Users.updatedAt]
+        )
     }
 
 }
