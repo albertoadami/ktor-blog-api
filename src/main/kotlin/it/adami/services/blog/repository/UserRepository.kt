@@ -1,23 +1,58 @@
 package it.adami.services.blog.repository
 
 import it.adami.services.blog.model.User
+import it.adami.services.blog.model.UserStatus
+import it.adami.services.blog.util.PGEnumColumnType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.exceptions.ExposedSQLException
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.javatime.JavaInstantColumnType
+import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.Instant
 
 interface UserRepository {
 
-    fun create(user: User): Long?
+    suspend fun create(user: User): Long?
 }
 
-class InMemoryUserRepository: UserRepository {
+class ExposedUserRepository: UserRepository {
 
-    private var users = mutableMapOf<Long, User>()
-    private var nextId = 1L
+    private object Users : Table("users") {
+        val id = long("id").autoIncrement()
+        val name = varchar("name", 255)
+        val surname = varchar("surname", 255)
+        val email = varchar("email", 255)
+        val password = varchar("password", 255)
+        val status = registerColumn<UserStatus>("status", PGEnumColumnType("user_status", UserStatus::class.java))
+        val createdAt = registerColumn<Instant>("created_at", JavaInstantColumnType())
+        val updatedAt = registerColumn<Instant>("updated_at", JavaInstantColumnType())
 
-    override fun create(user: User): Long? {
-        val newId = nextId
-        users[newId] = user.copy(id = newId)
-        nextId+=1
+        override val primaryKey = PrimaryKey(id)
+    }
 
-        return newId
+    override suspend fun create(user: User): Long? = withContext(Dispatchers.IO) {
+        try {
+            transaction {
+                val result = Users.insert {
+                    it[name] = user.name
+                    it[surname] = user.surname
+                    it[email] = user.email
+                    it[password] = user.password
+                    it[status] = user.status
+                    it[createdAt] = user.createdAt
+                    it[updatedAt] = user.updatedAt
+                }
+                return@transaction result[Users.id]
+            }
+        } catch (e: ExposedSQLException) {
+            if (e.message?.contains("users_email_key") == true) {
+                null
+            } else {
+                throw e
+            }
+        }
     }
 
 }

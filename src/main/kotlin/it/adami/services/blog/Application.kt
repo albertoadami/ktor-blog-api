@@ -13,7 +13,8 @@ import io.ktor.server.plugins.contentnegotiation.*
 import it.adami.services.blog.routes.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.request.*
-import it.adami.services.blog.repository.InMemoryUserRepository
+import it.adami.services.blog.db.configureDatabase
+import it.adami.services.blog.repository.ExposedUserRepository
 import it.adami.services.blog.service.UserServiceRules
 import org.slf4j.event.Level
 import kotlin.system.measureTimeMillis
@@ -27,9 +28,10 @@ fun Application.module() {
     val config = loadConfiguration(environment)
     installComponents()
     migrateDatabase(config.databaseConfig)
+    configureDatabase(config.databaseConfig)
 
     // repository classes
-    val userRepository = InMemoryUserRepository()
+    val userRepository = ExposedUserRepository()
 
     //service classes
     val userService = UserServiceRules(userRepository)
