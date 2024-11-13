@@ -1,9 +1,11 @@
 package it.adami.services.blog.service
 
+import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
 import it.adami.services.blog.exceptions.EmailAlreadyInUseException
+import it.adami.services.blog.exceptions.UserNotFoundException
 import it.adami.services.blog.model.User
 import it.adami.services.blog.model.UserStatus
 import it.adami.services.blog.repository.UserRepository
@@ -109,6 +111,38 @@ class UserServiceRulesTest: WordSpec({
 
             result shouldBe null
             verify(f.userRepository).getById(1L)
+        }
+    }
+
+    "UserServiceRules.deleteById(id)" should {
+
+        "should not throw exceptions if the user exist" {
+            val f = Fixtures()
+
+            runBlocking {
+                whenever(f.userRepository.deleteById(999L)).thenReturn(true)
+
+                shouldNotThrow<Exception> {
+                    f.userService.deleteById(999L)
+                }
+
+            }
+        }
+
+        "throw UserNotFoundException if the user doesn't exist" {
+            val f = Fixtures()
+
+            runBlocking {
+                whenever(f.userRepository.deleteById(999L)).thenReturn(false)
+
+                val exception = shouldThrow<UserNotFoundException> {
+                    f.userService.deleteById(999L)
+                }
+
+                exception.id shouldBe 999L
+
+            }
+
         }
     }
 

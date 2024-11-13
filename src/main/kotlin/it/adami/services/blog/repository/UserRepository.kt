@@ -18,6 +18,8 @@ interface UserRepository {
     suspend fun create(user: User): Long?
 
     suspend fun getById(id: Long): User?
+
+    suspend fun deleteById(id: Long): Boolean
 }
 
 class ExposedUserRepository: UserRepository {
@@ -64,6 +66,14 @@ class ExposedUserRepository: UserRepository {
                 .select( Users.id eq id)
                 .mapNotNull{toUser(it)}
                 .singleOrNull()
+        }
+    }
+
+    override suspend fun deleteById(id: Long): Boolean = withContext(Dispatchers.IO) {
+        transaction {
+            Users
+                .deleteWhere { Users.id eq id } > 0
+
         }
     }
 
