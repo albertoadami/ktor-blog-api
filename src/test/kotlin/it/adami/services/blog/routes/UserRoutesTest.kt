@@ -15,6 +15,7 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import it.adami.services.blog.converter.toJson
 import it.adami.services.blog.exceptions.EmailAlreadyInUseException
+import it.adami.services.blog.exceptions.UserNotFoundException
 import it.adami.services.blog.model.User
 import it.adami.services.blog.model.UserStatus
 import it.adami.services.blog.routes.json.GetUserResponse
@@ -172,5 +173,56 @@ class UserRoutesTest: WordSpec({
         }
     }
 
+    "DELETE /users/{userId}" should {
+
+        "return 204 if the user exist" {
+            testApplication {
+                val f = Fixtures()
+                configureApplication(f)
+
+                whenever(f.userService.deleteById(1)).doAnswer { }
+
+                val response = client.delete("/users/1") {
+                    contentType(ContentType.Application.Json)
+                }
+
+                response.status shouldBe HttpStatusCode.NoContent
+
+            }
+        }
+
+        "return 404 if the user doesn't exist" {
+            testApplication {
+                val f = Fixtures()
+                configureApplication(f)
+
+                whenever(f.userService.deleteById(1)).thenThrow(UserNotFoundException(1))
+
+                val response = client.delete("/users/1") {
+                    contentType(ContentType.Application.Json)
+                }
+
+                response.status shouldBe HttpStatusCode.NotFound
+
+            }
+        }
+
+        "return 500 if an unexpected exception occurred" {
+            testApplication {
+                val f = Fixtures()
+                configureApplication(f)
+
+                whenever(f.userService.deleteById(1L)).thenThrow(RuntimeException("unexpected exception"))
+
+                val response = client.delete("/users/1") {
+                    contentType(ContentType.Application.Json)
+                }
+
+                response.status shouldBe HttpStatusCode.InternalServerError
+
+            }
+        }
+
+    }
 
 })

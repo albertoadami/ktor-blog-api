@@ -7,6 +7,7 @@ import io.ktor.server.routing.*
 import io.ktor.util.logging.*
 import it.adami.services.blog.converter.*
 import it.adami.services.blog.exceptions.EmailAlreadyInUseException
+import it.adami.services.blog.exceptions.UserNotFoundException
 import it.adami.services.blog.routes.json.CreateUserRequest
 import it.adami.services.blog.service.UserService
 import org.jetbrains.exposed.sql.exposedLogger
@@ -42,6 +43,18 @@ class UserRoutes(private val userService: UserService) {
                 } catch (e: Exception) {
                     exposedLogger.error(e)
 
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
+
+            delete("{userId}") {
+                val userId = (call.parameters["userId"]!!).toLong()
+                try {
+                    userService.deleteById(userId)
+                    call.respond(HttpStatusCode.NoContent)
+                } catch (ex: UserNotFoundException) {
+                    call.respond(HttpStatusCode.NotFound)
+                } catch (ex: Exception) {
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             }

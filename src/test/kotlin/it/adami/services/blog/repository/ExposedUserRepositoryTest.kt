@@ -100,4 +100,38 @@ class ExposedUserRepositoryTest : WordSpec({
             }
         }
     }
+
+    "ExposedUserRepository.deleteById(id)" should {
+
+        "return true if the user exist" {
+            runBlocking {
+                val now = Instant.parse("2023-01-01T00:00:00Z")
+                val user = User(
+                    id = -1,
+                    name = "test",
+                    surname = "test",
+                    email = "test@test.it",
+                    password = "test",
+                    status = UserStatus.PENDING,
+                    createdAt = now,
+                    updatedAt = now
+                )
+
+                val id = repository.create(user)!!
+
+                val result = repository.deleteById(id)
+
+                result shouldBe true
+
+            }
+        }
+
+        "return false if the user doesn't exist" {
+            runBlocking {
+                val result = repository.deleteById(999L)
+
+                result shouldBe false
+            }
+        }
+    }
 })
