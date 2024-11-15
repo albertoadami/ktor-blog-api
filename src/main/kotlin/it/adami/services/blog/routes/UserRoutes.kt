@@ -8,7 +8,9 @@ import io.ktor.util.logging.*
 import it.adami.services.blog.converter.*
 import it.adami.services.blog.exceptions.EmailAlreadyInUseException
 import it.adami.services.blog.exceptions.UserNotFoundException
+import it.adami.services.blog.routes.json.CreatePostRequest
 import it.adami.services.blog.routes.json.CreateUserRequest
+import it.adami.services.blog.service.PostService
 import it.adami.services.blog.service.UserService
 import org.jetbrains.exposed.sql.exposedLogger
 
@@ -16,10 +18,11 @@ class UserRoutes(private val userService: UserService) {
 
     private fun Route.routes() {
         route("users") {
+            // POST /users
             post {
                 val userRequest = call.receive<CreateUserRequest>()
                 try {
-                    val createdId = userService.create(toDomain(userRequest))
+                    val createdId = userService.create(userRequest.toDomain())
                     val locationUri = "/users/$createdId"
                     call.response.headers.append(HttpHeaders.Location, locationUri)
                     call.respond(HttpStatusCode.Created)
@@ -29,26 +32,33 @@ class UserRoutes(private val userService: UserService) {
                     exposedLogger.error(e)
                     call.respond(HttpStatusCode.InternalServerError)
                 }
-
-
             }
-            get("{userId}") {
-                val userId = (call.parameters["userId"]!!).toLong()
-                try {
-                    when(val result = userService.getById(userId)) {
-                        null -> call.respond(HttpStatusCode.NotFound)
-                        else -> call.respond(toJson(result))
-                    }
 
+            // GET /users/{userId}
+            get("{userId}") {
+                val userId = call.parameters["userId"]?.toLongOrNull()
+                if (userId == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid or missing userId")
+                    return@get
+                }
+                try {
+                    when (val result = userService.getById(userId)) {
+                        null -> call.respond(HttpStatusCode.NotFound)
+                        else -> call.respond(result.toJson())
+                    }
                 } catch (e: Exception) {
                     exposedLogger.error(e)
-
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             }
 
+            // DELETE /users/{userId}
             delete("{userId}") {
-                val userId = (call.parameters["userId"]!!).toLong()
+                val userId = call.parameters["userId"]?.toLongOrNull()
+                if (userId == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid or missing userId")
+                    return@delete
+                }
                 try {
                     userService.deleteById(userId)
                     call.respond(HttpStatusCode.NoContent)

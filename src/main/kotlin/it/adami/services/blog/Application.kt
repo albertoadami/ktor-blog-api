@@ -14,7 +14,9 @@ import it.adami.services.blog.routes.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.request.*
 import it.adami.services.blog.db.configureDatabase
+import it.adami.services.blog.repository.ExposedPostRepository
 import it.adami.services.blog.repository.ExposedUserRepository
+import it.adami.services.blog.service.PostServiceRules
 import it.adami.services.blog.service.UserServiceRules
 import org.slf4j.event.Level
 import kotlin.system.measureTimeMillis
@@ -32,15 +34,19 @@ fun Application.module() {
 
     // repository classes
     val userRepository = ExposedUserRepository()
+    val postRepository = ExposedPostRepository()
 
     //service classes
     val userService = UserServiceRules(userRepository)
+    val postService = PostServiceRules(postRepository)
 
     val userRoutes = UserRoutes(userService)
+    val postRoutes = PostRoutes(postService)
 
     routing {
         healthCheckRoutes()
         userRoutes.register(this)
+        postRoutes.register(this)
     }
 }
 
