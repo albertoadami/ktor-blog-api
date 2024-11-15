@@ -24,7 +24,7 @@ interface UserRepository {
 
 class ExposedUserRepository: UserRepository {
 
-    private object Users : Table("users") {
+    object Users : Table("users") {
         val id = long("id").autoIncrement()
         val name = varchar("name", 255)
         val surname = varchar("surname", 255)

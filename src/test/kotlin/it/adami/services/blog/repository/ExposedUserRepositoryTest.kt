@@ -3,8 +3,7 @@ package it.adami.services.blog.repository
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import it.adami.services.blog.model.User
-import it.adami.services.blog.model.UserStatus
+import it.adami.services.blog.helpers.*
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
@@ -20,23 +19,14 @@ class ExposedUserRepositoryTest : WordSpec({
 
     afterTest {
         transaction {
-            exec("TRUNCATE TABLE users;")
+            exec("TRUNCATE TABLE users CASCADE;")
         }
     }
 
     "ExposedUserRepository.create(user)" should {
         "create successfully a user and return a new id" {
             runBlocking {
-                val user = User(
-                    id = -1,
-                    name = "test",
-                    surname = "test",
-                    email = "test@test.it",
-                    password = "test",
-                    status = UserStatus.PENDING,
-                    createdAt = Instant.now(),
-                    updatedAt = Instant.now()
-                )
+                val user = createNewUser()
 
                 val result = repository.create(user)
                 result shouldNotBe null
@@ -45,16 +35,7 @@ class ExposedUserRepositoryTest : WordSpec({
 
         "return null if the email is already in use" {
             runBlocking {
-                val user = User(
-                    id = -1,
-                    name = "test",
-                    surname = "test",
-                    email = "test@test.it",
-                    password = "test",
-                    status = UserStatus.PENDING,
-                    createdAt = Instant.now(),
-                    updatedAt = Instant.now()
-                )
+                val user = createNewUser()
 
                 val result1 = repository.create(user)
                 result1 shouldNotBe null
@@ -68,16 +49,7 @@ class ExposedUserRepositoryTest : WordSpec({
     "ExposedUserRepository.getById(id)" should {
         "return the user if it exists" {
                 val now = Instant.parse("2023-01-01T00:00:00Z")
-                val user = User(
-                    id = -1,
-                    name = "test",
-                    surname = "test",
-                    email = "test@test.it",
-                    password = "test",
-                    status = UserStatus.PENDING,
-                    createdAt = now,
-                    updatedAt = now
-                )
+                val user = createNewUser(now)
 
                 val userId = runBlocking {  repository.create(user)}!!
 
@@ -106,16 +78,7 @@ class ExposedUserRepositoryTest : WordSpec({
         "return true if the user exist" {
             runBlocking {
                 val now = Instant.parse("2023-01-01T00:00:00Z")
-                val user = User(
-                    id = -1,
-                    name = "test",
-                    surname = "test",
-                    email = "test@test.it",
-                    password = "test",
-                    status = UserStatus.PENDING,
-                    createdAt = now,
-                    updatedAt = now
-                )
+                val user = createNewUser(now)
 
                 val id = repository.create(user)!!
 

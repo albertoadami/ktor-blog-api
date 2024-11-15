@@ -129,7 +129,7 @@ class UserRoutesTest: WordSpec({
                 val responseBodyString = response.bodyAsText()
                 val responseBody = Json.decodeFromString<GetUserResponse>(responseBodyString)
 
-                responseBody shouldBe toJson(user)
+                responseBody shouldBe user.toJson()
 
 
             }
