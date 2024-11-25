@@ -1,5 +1,6 @@
 package it.adami.services.blog.converter
 
+import it.adami.services.blog.hashing.BCryptHashingData
 import it.adami.services.blog.model.Post
 import it.adami.services.blog.model.User
 import it.adami.services.blog.model.UserStatus
@@ -14,7 +15,7 @@ fun CreateUserRequest.toDomain(): User =
         name = this.name,
         surname = this.surname,
         email = this.email,
-        password = this.password,
+        password = BCryptHashingData.encrypt(this.password),
         createdAt = Instant.now(),
         updatedAt = Instant.now(),
         status = UserStatus.PENDING

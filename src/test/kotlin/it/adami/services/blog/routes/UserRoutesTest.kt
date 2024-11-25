@@ -43,7 +43,7 @@ class UserRoutesTest: WordSpec({
         }
     }
 
-    "POST /users" should {
+    "POST /users/register" should {
         "return 201 when the user is created successfully" {
             testApplication {
                 val f = Fixtures()
@@ -53,7 +53,7 @@ class UserRoutesTest: WordSpec({
 
                 val createUserJson = CreateUserRequest("test", "test", "test@test.it", "password")
 
-                val response = client.post("/users") {
+                val response = client.post("/users/register") {
                     contentType(ContentType.Application.Json)
                     setBody(Json.encodeToString(createUserJson))
                 }
@@ -72,7 +72,7 @@ class UserRoutesTest: WordSpec({
 
                 val createUserJson = CreateUserRequest("test", "test", "test@test.it", "password")
 
-                val response = client.post("/users") {
+                val response = client.post("/users/register") {
                     contentType(ContentType.Application.Json)
                     setBody(Json.encodeToString(createUserJson))
                 }
@@ -91,7 +91,7 @@ class UserRoutesTest: WordSpec({
 
                 val createUserJson = CreateUserRequest("test", "test", "test@test.it", "password")
 
-                val response = client.post("/users") {
+                val response = client.post("/users/register") {
                     contentType(ContentType.Application.Json)
                     setBody(Json.encodeToString(createUserJson))
                 }
