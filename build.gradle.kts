@@ -54,6 +54,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainer_version")
     testImplementation("io.kotest:kotest-runner-junit5:5.6.0")  // or the latest compatible version
     testImplementation("io.kotest:kotest-assertions-core:5.6.0")  // make sure all Kotest dependencies are up-to-date
+    implementation("org.mindrot:jbcrypt:0.4")
 }
 
 // Specify Java 21 toolchain

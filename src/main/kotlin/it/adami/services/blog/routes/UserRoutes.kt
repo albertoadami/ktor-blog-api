@@ -8,9 +8,7 @@ import io.ktor.util.logging.*
 import it.adami.services.blog.converter.*
 import it.adami.services.blog.exceptions.EmailAlreadyInUseException
 import it.adami.services.blog.exceptions.UserNotFoundException
-import it.adami.services.blog.routes.json.CreatePostRequest
 import it.adami.services.blog.routes.json.CreateUserRequest
-import it.adami.services.blog.service.PostService
 import it.adami.services.blog.service.UserService
 import org.jetbrains.exposed.sql.exposedLogger
 
@@ -18,19 +16,22 @@ class UserRoutes(private val userService: UserService) {
 
     private fun Route.routes() {
         route("users") {
-            // POST /users
-            post {
-                val userRequest = call.receive<CreateUserRequest>()
-                try {
-                    val createdId = userService.create(userRequest.toDomain())
-                    val locationUri = "/users/$createdId"
-                    call.response.headers.append(HttpHeaders.Location, locationUri)
-                    call.respond(HttpStatusCode.Created)
-                } catch (e: EmailAlreadyInUseException) {
-                    call.respond(HttpStatusCode.Conflict)
-                } catch (e: Exception) {
-                    exposedLogger.error(e)
-                    call.respond(HttpStatusCode.InternalServerError)
+
+            route("register") {
+                // POST /users/register
+                post {
+                    val userRequest = call.receive<CreateUserRequest>()
+                    try {
+                        val createdId = userService.create(userRequest.toDomain())
+                        val locationUri = "/users/$createdId"
+                        call.response.headers.append(HttpHeaders.Location, locationUri)
+                        call.respond(HttpStatusCode.Created)
+                    } catch (e: EmailAlreadyInUseException) {
+                        call.respond(HttpStatusCode.Conflict)
+                    } catch (e: Exception) {
+                        exposedLogger.error(e)
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
                 }
             }
 
