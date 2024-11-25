@@ -6,6 +6,8 @@ import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
 import it.adami.services.blog.exceptions.EmailAlreadyInUseException
 import it.adami.services.blog.exceptions.UserNotFoundException
+import it.adami.services.blog.hashing.BCryptHashingData
+import it.adami.services.blog.helpers.*
 import it.adami.services.blog.model.User
 import it.adami.services.blog.model.UserStatus
 import it.adami.services.blog.repository.UserRepository
@@ -73,6 +75,50 @@ class UserServiceRulesTest: WordSpec({
             }
 
         }
+    }
+
+    "UserServiceRules.login(email, password)" should {
+
+        val email = "test@test.it"
+        val password = "password"
+
+        "return the user if the login was successfully" {
+
+            val f = Fixtures()
+            val user = createNewUser().copy(email = email, password = BCryptHashingData.encrypt(password))
+
+            runBlocking {
+                whenever(f.userRepository.getByEmail(email)).thenReturn(user)
+
+                f.userService.login(email, password) shouldBe user
+            }
+        }
+
+
+        "return null if the email doesn't exist" {
+
+            val f = Fixtures()
+
+            runBlocking {
+                whenever(f.userRepository.getByEmail(email)).thenReturn(null)
+
+                f.userService.login(email, password) shouldBe null
+
+            }
+        }
+
+        "return null if the user exist but the password is wrong" {
+
+            val f = Fixtures()
+            val user = createNewUser().copy(email = email, password = BCryptHashingData.encrypt(password + "wrong"))
+
+            runBlocking {
+                whenever(f.userRepository.getByEmail(email)).thenReturn(user)
+
+                f.userService.login(email, password) shouldBe null
+            }
+        }
+
     }
 
     "UserServiceRules.getById(id)" should {

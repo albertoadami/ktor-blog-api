@@ -73,6 +73,37 @@ class ExposedUserRepositoryTest : WordSpec({
         }
     }
 
+    "ExposedUserRepository.getByEmail(email)" should {
+
+        "return the user if it exists" {
+            runBlocking {
+                val now = Instant.parse("2023-01-01T00:00:00Z")
+                val user = createNewUser(now)
+
+                repository.create(user)
+
+                val retrievedUser = repository.getByEmail(user.email)!!
+
+                retrievedUser.name shouldBe user.name
+                retrievedUser.surname shouldBe user.surname
+                retrievedUser.email shouldBe user.email
+                retrievedUser.password shouldBe user.password
+                retrievedUser.status shouldBe user.status
+                retrievedUser.createdAt shouldBe user.createdAt
+                retrievedUser.updatedAt shouldBe user.updatedAt
+
+            }
+
+        }
+
+        "return null if the email doesn't exist" {
+            runBlocking {
+                repository.getByEmail("test@test.it") shouldBe null
+            }
+        }
+
+    }
+
     "ExposedUserRepository.deleteById(id)" should {
 
         "return true if the user exist" {

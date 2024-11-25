@@ -13,6 +13,8 @@ import io.ktor.server.plugins.contentnegotiation.*
 import it.adami.services.blog.routes.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.request.*
+import it.adami.services.blog.authentication.Authentication
+import it.adami.services.blog.authentication.JWTAuthentication
 import it.adami.services.blog.db.configureDatabase
 import it.adami.services.blog.repository.ExposedPostRepository
 import it.adami.services.blog.repository.ExposedUserRepository
@@ -36,17 +38,21 @@ fun Application.module() {
     val userRepository = ExposedUserRepository()
     val postRepository = ExposedPostRepository()
 
+    val authentication: Authentication = JWTAuthentication(config.jwtConfig.secretKey, config.jwtConfig.duration)
+
     //service classes
     val userService = UserServiceRules(userRepository)
     val postService = PostServiceRules(postRepository)
 
     val userRoutes = UserRoutes(userService)
     val postRoutes = PostRoutes(postService)
+    val authenticationRoutes = AuthenticationRoutes(userService, authentication)
 
     routing {
         healthCheckRoutes()
         userRoutes.register(this)
         postRoutes.register(this)
+        authenticationRoutes.register(this)
     }
 }
 
