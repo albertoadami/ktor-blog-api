@@ -19,6 +19,8 @@ interface UserRepository {
 
     suspend fun getById(id: Long): User?
 
+    suspend fun getByEmail(email: String): User?
+
     suspend fun deleteById(id: Long): Boolean
 }
 
@@ -65,6 +67,15 @@ class ExposedUserRepository: UserRepository {
             Users
                 .select( Users.id eq id)
                 .mapNotNull{toUser(it)}
+                .singleOrNull()
+        }
+    }
+
+    override suspend fun getByEmail(email: String): User? = withContext(Dispatchers.IO) {
+        transaction{
+            Users
+                .select { Users.email eq email }
+                .mapNotNull { toUser(it) }
                 .singleOrNull()
         }
     }

@@ -9,6 +9,7 @@ plugins {
     kotlin("jvm") version "1.9.0"
     id("io.ktor.plugin") version "3.0.0"
     kotlin("plugin.serialization") version "2.0.0"
+    id("org.jetbrains.kotlinx.kover") version "0.7.3"
 
 }
 
@@ -35,6 +36,8 @@ dependencies {
     implementation("io.ktor:ktor-server-status-pages:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging:$ktor_version")
     implementation("io.ktor:ktor-server-config-yaml:$ktor_version")
+    implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")

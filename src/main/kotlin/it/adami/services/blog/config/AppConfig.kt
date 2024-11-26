@@ -2,20 +2,28 @@ package it.adami.services.blog.config
 
 import io.ktor.server.application.*
 
-class AppConfig(val databaseConfig: DatabaseConfig)
+class AppConfig(val databaseConfig: DatabaseConfig, val jwtConfig: JWTConfig)
 
 class DatabaseConfig(val host: String, val port: Int, val name: String, val username: String, val password: String)
 
-fun loadConfiguration(environment: ApplicationEnvironment): AppConfig {
-    val config = environment.config.config("database")
+class JWTConfig(val secretKey: String, val duration: Long)
 
-    val host = config.property("host").getString()
-    val port = config.property("port").getString().toInt()
-    val name = config.property("name").getString()
-    val username = config.property("username").getString()
-    val password = config.property("password").getString()
+fun loadConfiguration(environment: ApplicationEnvironment): AppConfig {
+    val databaseConfigs = environment.config.config("database")
+    val jwtConfigs = environment.config.config("jwt")
+
+    val host = databaseConfigs.property("host").getString()
+    val port = databaseConfigs.property("port").getString().toInt()
+    val name = databaseConfigs.property("name").getString()
+    val username = databaseConfigs.property("username").getString()
+    val password = databaseConfigs.property("password").getString()
 
     val databaseConfig = DatabaseConfig(host, port, name, username, password)
 
-    return AppConfig(databaseConfig)
+    val secretKey = jwtConfigs.property("secretKey").getString()
+    val duration = jwtConfigs.property("duration").getString().toLong()
+
+    val jwtConfig = JWTConfig(secretKey, duration)
+
+    return AppConfig(databaseConfig, jwtConfig)
 }
