@@ -21,6 +21,8 @@ interface UserRepository {
 
     suspend fun getByEmail(email: String): User?
 
+    suspend fun update(user: User): Boolean
+
     suspend fun deleteById(id: Long): Boolean
 }
 
@@ -78,6 +80,21 @@ class ExposedUserRepository: UserRepository {
                 .mapNotNull { toUser(it) }
                 .singleOrNull()
         }
+    }
+
+    override suspend fun update(user: User): Boolean = withContext(Dispatchers.IO) {
+        transaction {
+                val result =
+                    Users.update({ Users.id eq user.id}) {
+                        it[Users.name] = user.name
+                        it[Users.surname] = user.surname
+                        it[Users.status] = user.status
+                        it[Users.email] = user.email
+                        it[Users.updatedAt] = user.updatedAt
+                    }
+                return@transaction result > 0
+        }
+
     }
 
     override suspend fun deleteById(id: Long): Boolean = withContext(Dispatchers.IO) {

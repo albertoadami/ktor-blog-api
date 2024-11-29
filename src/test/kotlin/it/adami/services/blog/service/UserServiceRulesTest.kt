@@ -5,6 +5,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
 import it.adami.services.blog.exceptions.EmailAlreadyInUseException
+import it.adami.services.blog.exceptions.UserInInvalidStateException
 import it.adami.services.blog.exceptions.UserNotFoundException
 import it.adami.services.blog.hashing.BCryptHashingData
 import it.adami.services.blog.helpers.*
@@ -157,6 +158,42 @@ class UserServiceRulesTest: WordSpec({
 
             result shouldBe null
             verify(f.userRepository).getById(1L)
+        }
+    }
+
+    "UserServiceRules.activateUser(id)" should {
+
+        val user = createNewUser().copy(id = 10L)
+
+        "update successfully the state of the user when it exists and is in valid state" {
+
+            val f = Fixtures()
+
+
+            whenever(f.userRepository.getById(user.id)).thenReturn(user)
+            whenever(f.userRepository.update(any())).thenReturn(true)
+
+            shouldNotThrow<Throwable>{f.userService.activateUser(user.id)}
+
+        }
+
+        "throw UserNotFoundException if the user doesn't exist" {
+
+            val f = Fixtures()
+
+            whenever(f.userRepository.getById(user.id)).thenReturn(null)
+
+            shouldThrow<UserNotFoundException> { f.userService.activateUser(user.id) }
+        }
+
+        "throw UserInInvalidStateException if the user is already activated" {
+
+            val f = Fixtures()
+
+            whenever(f.userRepository.getById(user.id)).thenReturn(user.copy(status = UserStatus.ENABLED))
+
+            shouldThrow<UserInInvalidStateException> {f.userService.activateUser(user.id)}
+
         }
     }
 
