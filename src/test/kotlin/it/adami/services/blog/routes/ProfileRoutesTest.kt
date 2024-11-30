@@ -16,6 +16,7 @@ import io.ktor.server.testing.*
 import it.adami.services.blog.authentication.Authentication
 import it.adami.services.blog.authentication.TokenInfo
 import it.adami.services.blog.converter.toJson
+import it.adami.services.blog.exceptions.UserInInvalidStateException
 import it.adami.services.blog.helpers.createNewUser
 import it.adami.services.blog.model.UserStatus
 import it.adami.services.blog.routes.json.GetUserResponse
@@ -171,6 +172,93 @@ class ProfileRoutesTest : WordSpec({
 
         }
 
+
+    }
+
+    "POST /profile/activate" should {
+
+        val token = JWT.create()
+            .withIssuer("test-issuer")
+            .withAudience("test-audience")
+            .sign(Algorithm.HMAC256("test-secret"))
+
+        val user = createNewUser().copy(id = 1, email = "test@test.it", status = UserStatus.PENDING)
+
+
+        "return 204 when the activate step complete successfully" {
+
+            testApplication {
+                val f = Fixtures()
+                configureApplication(f)
+
+                whenever(f.authentication.extractTokenInfo(any())).thenReturn(TokenInfo(user.id, user.email, user.status))
+                whenever(f.userService.activateUser(user.id)).thenReturn(Unit)
+
+                val response = client.post("/profile/activate") {
+                    headers {
+                        append(HttpHeaders.Authorization, "Bearer $token")
+                    }
+                }
+
+                response.status shouldBe HttpStatusCode.NoContent
+
+
+            }
+
+        }
+
+        "return 401 if the token is invalid" {
+            testApplication {
+                val f = Fixtures()
+                configureApplication(f)
+
+                val response = client.post("/profile/activate") {
+                    headers {
+                        append(HttpHeaders.Authorization, "wrong-token")
+                    }
+                }
+
+                response.status shouldBe HttpStatusCode.Unauthorized
+            }
+        }
+
+        "return 405 if the user is already activated" {
+            testApplication {
+                val f = Fixtures()
+                configureApplication(f)
+
+                whenever(f.authentication.extractTokenInfo(any())).thenReturn(TokenInfo(user.id, user.email, UserStatus.ENABLED))
+                whenever(f.userService.activateUser(user.id)).thenThrow(UserInInvalidStateException(user.id, UserStatus.ENABLED))
+
+                val response = client.post("/profile/activate") {
+                    headers {
+                        append(HttpHeaders.Authorization, "Bearer $token")
+                    }
+                }
+
+                response.status shouldBe HttpStatusCode.MethodNotAllowed
+
+            }
+        }
+
+        "return 500 if some unexpected exception occured" {
+            testApplication {
+                val f = Fixtures()
+                configureApplication(f)
+
+                whenever(f.authentication.extractTokenInfo(any())).thenReturn(TokenInfo(user.id, user.email, user.status))
+                whenever(f.userService.activateUser(user.id)).thenThrow(RuntimeException("some error occured"))
+
+                val response = client.post("/profile/activate") {
+                    headers {
+                        append(HttpHeaders.Authorization, "Bearer $token")
+                    }
+                }
+
+                response.status shouldBe HttpStatusCode.InternalServerError
+
+            }
+        }
 
     }
 
